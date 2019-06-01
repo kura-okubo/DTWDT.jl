@@ -1,4 +1,5 @@
-# DTWDT
+# DTWDT.jl
+**Dinamic Time Warping for Diference of Time**
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://kura-okubo.github.io/DTWDT.jl/stable)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://kura-okubo.github.io/DTWDT.jl/dev)
