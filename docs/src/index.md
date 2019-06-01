@@ -6,7 +6,3 @@
 ```@autodocs
 Modules = [DTWDT]
 ```
-<<<<<<< HEAD
-
-=======
->>>>>>> dev

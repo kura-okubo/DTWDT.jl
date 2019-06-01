@@ -4,8 +4,4 @@
 ```
 
 ## Installation
-<<<<<<< HEAD
 'pkg> add '
-=======
-'pkg> add '
->>>>>>> dev
