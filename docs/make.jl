@@ -15,4 +15,7 @@ makedocs(;
 
 deploydocs(;
     repo="github.com/kura-okubo/DTWDT.jl",
+    target = "build",
+    deps   = nothing,
+    make   = nothing,
 )
