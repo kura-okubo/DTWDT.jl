@@ -22,6 +22,6 @@ jobs:
       - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd()));
                                                Pkg.instantiate();
                                                Pkg.build("DTWDT")'
-      - julia -e 'cd(Pkg.dir("DTWDT")); Pkg.add("Documenter"); ENV["DOCUMENTER_KEY"] = "docs"; include(joinpath("docs", "make.jl"))'
+      - julia -e 'using Pkg; cd(Pkg.dir("DTWDT")); Pkg.add("Documenter"); ENV["DOCUMENTER_KEY"] = "docs"; include(joinpath("docs", "make.jl"))'
 
       after_success: skip
