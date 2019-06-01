@@ -1,4 +1,4 @@
-name = "DTWDT"
+name = "DTWDT.jl"
 uuid = "19e40bf2-84a3-11e9-2673-673833aa2bdc"
 authors = ["kurama"]
 version = "0.1.0"
