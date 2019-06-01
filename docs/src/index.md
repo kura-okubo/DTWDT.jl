@@ -1,8 +1,8 @@
 # DTWDT.jl
 
-```@index
-```
+** Dynamic Time Warping for evaluating Time shift and Distance between two signals.
 
-```@autodocs
-Modules = [DTWDT]
+Copyright © Kurama OKubo, 2019
+
+```@index
 ```
