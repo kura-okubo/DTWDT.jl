@@ -4,21 +4,13 @@ using Documenter, DTWDT
 
 makedocs(
     modules = [DTWDT],
-    format = Documenter.HTML(
-        # Use clean URLs, unless built as a "local" build
-        prettyurls = !("local" in ARGS),
-        canonical = "https://kura-okubo.github.io/DTWDT.jl/stable/",
-        assets = ["assets/favicon.ico"],
-    ),
-    clean = false,
+    format = Documenter.HTML(),
     sitename="DTWDT.jl",
     authors="kurama",
-    linkcheck = !("skiplinks" in ARGS),
     pages = [
         "Home" => "index.md",
         "Installation" => "Installation.md",
     ],
-    strict = true,
 )
 
 deploydocs(
