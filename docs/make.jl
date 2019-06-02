@@ -16,7 +16,7 @@ makedocs(
     linkcheck = !("skiplinks" in ARGS),
     pages = [
         "Home" => "index.md",
-        "Home" => "index.md",
+        "Installation" => "Installation.md",
     ],
     strict = true,
 )
