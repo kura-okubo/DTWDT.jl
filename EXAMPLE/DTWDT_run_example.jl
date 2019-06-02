@@ -32,7 +32,6 @@ maxLag = 80; # max nuber of points to search forward and backward (can be npts, 
 b      = 1; # b-value to limit strain
 # impose a strain limit: 1 dt is b=1, half dt is b=2, etc.
 # if you mess with b you will see the results in the estimated shifts
-# (kura) usually b=1
 
 ## load the data file and plot
 
@@ -111,6 +110,8 @@ function plotdistfunc()
         title = "Distance function dir = +1",
         xaxis=attr(title="Time [s]"),
         yaxis=attr(title="τ [s]"),
+        width=800,
+        height=400,
     )
     plot(tr, layout)
 end
@@ -126,18 +127,23 @@ tvec2     = tvec + stbarTime; # make the warped time axis
 # make figure
 function lineplot3()
     tr1 = scatter(;x=tvec, y=stTime, mode="lines", name="Actual")
-    tr2 = scatter(;x=tvec, y=stbarTime, mode="markers", name="Estimated")
+    tr2 = scatter(;x=tvec[1:10:end], y=stbarTime[1:10:end], mode="markers", name="Estimated")
     layout = Layout(
         title = "Estimated shifts",
         xaxis=attr(title="Time [s]"),
         yaxis=attr(title="τ [s]"),
+        width=800,
+        height=400,
     )
     plot([tr1, tr2], layout)
 end
 
-p = ([plotdistfunc(), lineplot3()])
+p = plotdistfunc()
 display(p)
-savefig(p, "./SINEdistance.png")
+savefig(p, "./SINEdistarray.png")
+p = lineplot3()
+display(p)
+savefig(p, "./SINEcomparison.png")
 
 ## An example of computing the residual misfit
 
@@ -280,6 +286,8 @@ end
 
 p = ([lineplot_s2(), lineplot_s3()])
 display(p)
+savefig(p, "./SINEtraces.png")
+
 
 println("Type something to exit this example.");
 readline();

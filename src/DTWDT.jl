@@ -1,13 +1,7 @@
+__precompile__()
 module DTWDT
 
-export test
-
-"""
-test()
-return 1
-"""
-function test()
-    return 1
-end
+include("functions.jl")
+using .DTWDTfunctions
 
 end # module

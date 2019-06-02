@@ -1,6 +1,7 @@
 push!(LOAD_PATH,"../src/")
 
 using Documenter, DTWDT
+using DTWDT.DTWDTfunctions
 
 makedocs(
     modules = [DTWDT],
@@ -9,7 +10,9 @@ makedocs(
     authors="kurama",
     pages = [
         "Home" => "index.md",
-        "Installation" => "Installation.md",
+        "Functions" => "Functions.md",
+        "Sample results" => "Sampleresults.md"
+        
     ],
 )
 

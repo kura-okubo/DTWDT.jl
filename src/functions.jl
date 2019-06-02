@@ -1,26 +1,28 @@
 module DTWDTfunctions
 export test, computeErrorFunction, accumulateErrorFunction, backtrackDistanceFunction, computeDTWerror
-using FFTW, LinearAlgebra, DSP
-
-function test()
-    println("test")
-    return nothing
-end
 
 """
  USAGE: err = computeErrorFunction( u1, u0, nSample, lag )
 
  INPUT:
+
    u1      = trace that we want to warp; size = (nsamp,1)
+
    u0      = reference trace to compare with: size = (nsamp,1)
+
    nSample = numer of points to compare in the traces
+
    lag     = maximum lag in sample number to search
+
    norm    = 'L2' or 'L1' (default is 'L2')
+
  OUTPUT:
+
     err = the 2D error function; size = (nsamp,2*lag+1)
 
- The error function is equation 1 in Hale, 2013. You could umcomment the
- L1 norm and comment the L2 norm if you want on Line 29
+ The error function is equation 1 in Hale, 2013.
+
+ You could umcomment the L1 norm and comment the L2 norm if you want on Line 29
 
  Original by Di Yang
  Last modified by Dylan Mikesell (25 Feb. 2015)
@@ -97,18 +99,24 @@ end
  USAGE: d = accumulation_diw_mod( dir, err, nSample, lag, b )
 
  INPUT:
+
    dir = accumulation direction ( dir > 0 = forward in time, dir <= 0 = backward in time)
+
    err = the 2D error function; size = (nsamp,2*lag+1)
+
    nSample = numer of points to compare in the traces
+
    lag = maximum lag in sample number to search
+
    b = strain limit (integer value >= 1)
+
  OUTPUT:
+
     d = the 2D distance function; size = (nsamp,2*lag+1)
 
  The function is equation 6 in Hale, 2013.
 
- Original by Di Yang
- Last modified by Dylan Mikesell (25 Feb. 2015)
+ Original by Di Yang Last modified by Dylan Mikesell (25 Feb. 2015)
 """
 function accumulateErrorFunction(dir::Int, err::Array{Float64,2}, nSample::Int, lag::Int, b::Int)
 
@@ -186,21 +194,26 @@ end
  USAGE: stbar = backtrackDistanceFunction( dir, d, err, lmin, b )
 
  INPUT:
+
    dir   = side to start minimization ( dir > 0 = front, dir <= 0 =  back)
+
    d     = the 2D distance function; size = (nsamp,2*lag+1)
+
    err   = the 2D error function; size = (nsamp,2*lag+1)
+
    lmin  = minimum lag to search over
+
    b     = strain limit (integer value >= 1)
+
  OUTPUT:
+
    stbar = vector of integer shifts subject to |u(i)-u(i-1)| <= 1/b
 
  The function is equation 2 in Hale, 2013.
 
- Original by Di Yang
- Last modified by Dylan Mikesell (19 Dec. 2014)
+ Original by Di Yang Last modified by Dylan Mikesell (19 Dec. 2014)
 
 """
-
 function backtrackDistanceFunction(dir::Int, d::Array{Float64,2}, err::Array{Float64,2}, lmin::Int, b::Int)
 
     #d = dist
@@ -376,12 +389,14 @@ end
  USAGE: function error = computeDTWerror( Aerr, u, lag0 )
 
  INPUT:
+
    Aerr = error MATRIX (equation 13 in Hale, 2013)
+
    u    = warping function (samples) VECTOR
+
    lag0 = value of maximum lag (samples) SCALAR
 
- Written by Dylan Mikesell
- Last modified: 25 February 2015
+ Written by Dylan Mikesell Last modified: 25 February 2015
 """
 function computeDTWerror(Aerr::Array{Float64,2}, u::Array{Int64,1}, lag0::Int)
 
