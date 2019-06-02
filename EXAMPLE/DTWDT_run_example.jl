@@ -25,6 +25,7 @@ maxLag = 80; # max nuber of points to search forward and backward (can be npts, 
 b      = 1; # b-value to limit strain
 # impose a strain limit: 1 dt is b=1, half dt is b=2, etc.
 # if you mess with b you will see the results in the estimated shifts
+# (kura) usually b=1
 
 ## load the data file and plot
 
