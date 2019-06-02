@@ -1,5 +1,5 @@
 module DTWDTfunctions
-export test, computeErrorFunction, accumulateErrorFunction, backtrackDistanceFunction
+export test, computeErrorFunction, accumulateErrorFunction, backtrackDistanceFunction, computeDTWerror
 using FFTW, LinearAlgebra, DSP
 
 function test()
@@ -135,7 +135,6 @@ function accumulateErrorFunction(dir::Int, err::Array{Float64,2}, nSample::Int, 
     end
     #--------------------------------------------------------------------------
     # Loop through all times ii in forward or backward direction
-    println(iBegin,iInc,iEnd)
 
     for ii = iBegin:iInc:iEnd
 
@@ -365,6 +364,44 @@ function backtrackDistanceFunction(dir::Int, d::Array{Float64,2}, err::Array{Flo
     #         end
     #     end
     # end
+
+end
+
+
+"""
+
+ Compute the accumulated error along the warping path for Dynamic
+ Time Warping.
+
+ USAGE: function error = computeDTWerror( Aerr, u, lag0 )
+
+ INPUT:
+   Aerr = error MATRIX (equation 13 in Hale, 2013)
+   u    = warping function (samples) VECTOR
+   lag0 = value of maximum lag (samples) SCALAR
+
+ Written by Dylan Mikesell
+ Last modified: 25 February 2015
+"""
+function computeDTWerror(Aerr::Array{Float64,2}, u::Array{Int64,1}, lag0::Int)
+
+    npts = length(u);
+
+    if size(Aerr,1) != npts
+        #println("Funny things with dimensions of error matrix: check inputs.");
+        #Aerr = transpose(Aerr);
+        error("Funny things with dimensions of error matrix: check inputs.")
+    end
+
+    error = 0; # initialize
+
+    # accumulate error
+    for ii = 1:npts
+        idx = lag0 + 1 + u[ii]; # index of lag
+        error += Aerr[ii,idx]; # sum error
+    end
+
+    return error
 
 end
 
