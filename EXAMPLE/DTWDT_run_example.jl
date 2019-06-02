@@ -1,8 +1,11 @@
 # This script is to run DTWDT for developping purpose.
-
+using PlotlyJS, FileIO, JLD2
 # This script runs an example of dynamic time warping as an introduction to
 # the method.
-addpath('src');
+push!(LOAD_PATH,"../src")
+
+include("../src/functions.jl")
+using .DTWDTfunctions
 
 example = 2; # shift function (1=step, 2=sine)
 # you can try two test cases. Watch the 'maxLag' parameter. The two shift
@@ -29,38 +32,62 @@ b      = 1; # b-value to limit strain
 
 ## load the data file and plot
 
-switch example
-    case 1
-        load('exampleData/stepShiftData.mat'); # data with constant shifts and step in the middle
-    case 2
-        load('exampleData/sineShiftData.mat'); # data with sine wave shifts of one cycle
+if example == 1
+    #@load "../exampledata/stepShiftData.jld2"; # data with constant shifts and step in the middle
+    error("stepShiftData is not implemented.")
+elseif example == 2
+    @load "../exampledata/sineShiftData.jld2"; # data with sine wave shifts of one cycle
 end
 
 lvec   = (-maxLag:maxLag).*dt; # lag array for plotting below
-npts   = numel(u0);            # number of samples
+npts   = length(u0);            # number of samples
 tvec   = ( 0 : npts-1 ) .* dt; # make the time axis
-stTime = st.*dt;               # shift vector in time
+stTime = st;               # shift vector in time
 
-figure;
 # plot shift function
-subplot(2,1,1)
-plot(tvec,stTime);
-xlabel('Time [s]'); ylabel('\tau [s]'); title('Shift applied to u_{0}(t)');
-# plot original and shifted traces
-subplot(2,1,2)
-plot(tvec,u0); hold on;
-plot(tvec,u1); grid on;
-xlabel('Time [s]'); ylabel('Amplitude [a.u.]'); title('Traces');
-legend('u_{0}(t)','u(t)','Location','Best'); legend boxoff;
+#time shift curve
+
+function lineplot1()
+    tr = scatter(;x=tvec, y=stTime, mode="lines", name="Timeshift")
+    layout = Layout(
+        title="Shift applied to u_{0}(t)",
+        xaxis=attr(title="Time [s]"),
+        yaxis=attr(title="τ [s]"),
+    )
+    plot(tr, layout)
+end
+
+function lineplot2()
+    tr1 = scatter(;x=tvec, y=u0, mode="lines+markers", name="u<sub>0</sub>(t)")
+    tr2 = scatter(;x=tvec, y=u1, mode="lines+markers", name="u(t)")
+    layout = Layout(
+        title = "Traces",
+        xaxis=attr(title="Time [s]"),
+        yaxis=attr(title="Amplitude [a.u.]"),
+    )
+    plot([tr1, tr2], layout)
+end
+
+#p = [lineplot1(), lineplot2()]
 
 ## compute error function and plot
 
-err = computeErrorFunction( u1, u0, npts, maxLag ); # cpmpute error function over lages
+err = computeErrorFunction(u1, u0, npts, maxLag); # cpmpute error function over Lags
 # note the error function is independent of strain limit 'b'.
 
-figure;
-imagesc(tvec,lvec,log10(err')); axis xy; colormap('gray'); c = colorbar;
-xlabel('Time [s]'); ylabel('Lag'); title('Error function');
+
+function ploterrfunc()
+    tr = heatmap(;x=tvec, y=lvec, z=log10.(err), colorscale="Greys",
+    zauto=false, zmin=-4, zmax=0, colorbar=attr(title="L2 error", titleside="right",))
+    layout = Layout(
+        title = "Error function",
+        xaxis=attr(title="Time [s]"),
+        yaxis=attr(title="Lag"),
+    )
+    plot(tr, layout)
+end
+
+#ploterrfunc()
 
 ## accumuluate error in FORWARD direction
 
@@ -71,7 +98,20 @@ direction = 1; # direction to accumulate errors (1=forward, -1=backward)
 # want to make sure you're doing things in the proper directions in each
 # step!!!
 
-dist  = accumulateErrorFunction( direction, err, npts, maxLag, b ); # forward accumulation to make distance function
+dist  = accumulateErrorFunction(direction, err, npts, maxLag, b); # forward accumulation to make distance function
+
+function ploterrfunc()
+    tr = heatmap(;x=tvec, y=lvec, z=dist, colorscale="Jet",
+    zauto=true, colorbar=attr(title="Dist", titleside="right",))
+    layout = Layout(
+        title = "Dist array test",
+        xaxis=attr(title="Time [s]"),
+        yaxis=attr(title="Lag"),
+    )
+    plot(tr, layout)
+end
+ploterrfunc()
+
 stbar = backtrackDistanceFunction( -1*direction, dist, err, -maxLag, b ); # find shifts
 
 ## plot the results
@@ -126,7 +166,7 @@ error = computeDTWerror( err, stbar, maxLag );
 
 direction = -1; # direction to accumulate errors (1=forward, -1=backward)
 
-dist  = accumulateErrorFunction( direction, err, npts, maxLag, b ); # backward accumulation to make distance function
+dist  = accumulateErrorFunction(direction, err, npts, maxLag, b ); # backward accumulation to make distance function
 stbar = backtrackDistanceFunction( -1*direction, dist, err, -maxLag, b ); # find shifts
 
 ## plot the results
