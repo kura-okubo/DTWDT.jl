@@ -1,5 +1,5 @@
 # This script is to run DTWDT for developping purpose.
-using PlotlyJS, FileIO, JLD2
+using PlotlyJS, ORCA, FileIO, JLD2
 # This script runs an example of dynamic time warping as an introduction to
 # the method.
 push!(LOAD_PATH,"../src")
@@ -100,17 +100,17 @@ direction = 1; # direction to accumulate errors (1=forward, -1=backward)
 
 dist  = accumulateErrorFunction(direction, err, npts, maxLag, b); # forward accumulation to make distance function
 
-function ploterrfunc()
+function plotdistfunc()
     tr = heatmap(;x=tvec, y=lvec, z=dist, colorscale="Jet",
     zauto=true, colorbar=attr(title="Dist", titleside="right",))
     layout = Layout(
-        title = "Dist array test",
+        title = "Distance function",
         xaxis=attr(title="Time [s]"),
-        yaxis=attr(title="Lag"),
+        yaxis=attr(title="τ [s]"),
     )
     plot(tr, layout)
 end
-ploterrfunc()
+#plotdistfunc()
 
 stbar = backtrackDistanceFunction( -1*direction, dist, err, -maxLag, b ); # find shifts
 
@@ -120,47 +120,27 @@ stbarTime = stbar .* dt;      # convert from samples to time
 tvec2     = tvec + stbarTime; # make the warped time axis
 
 # make figure
-h = figure('Color','White'); set(h,'PaperUnits','Inches');
-set(h, 'PaperPositionMode','Auto');
-set(h, 'Units', 'Inches','Position',[1 1 10 10]);
+function lineplot3()
+    tr1 = scatter(;x=tvec, y=stTime, mode="lines", name="Actual")
+    tr2 = scatter(;x=tvec, y=stbarTime, mode="markers", name="Estimated")
+    layout = Layout(
+        title = "Estimated shifts",
+        xaxis=attr(title="Time [s]"),
+        yaxis=attr(title="τ [s]"),
+    )
+    plot([tr1, tr2], layout)
+end
 
-# plot the distance function
-subplot(2,1,1);
-imagesc(tvec,lvec,dist');
-haxes1 = gca;
-title('Distance function'); c=colorbar; axis('tight'); axis xy;
-xlabel('Time [s]'); ylabel('\tau [s]');
-# plot real shifts against estimated shifts
-subplot(2,1,2);
-plot(tvec,stTime,'ko'); hold on;
-plot(tvec,stbarTime,'r+');
-haxes2 = gca;
-legend('Actual','Estimated'); legend boxoff;
-title('Estimated shifts');
-xlabel('Time [s]'); ylabel('\tau [s]');
+p = ([plotdistfunc(), lineplot3()])
 
-pos1 = haxes1.Position;
-pos2 = haxes2.Position;
-set(haxes2,'Position',[pos2(1) pos2(2) pos1(3) pos1(4)]);
-print(h,'-dpng','SINEdistance.png');
-
-figure;
-# plot input traces
-subplot(2,1,1);
-plot(tvec,u0,'b',tvec,u1,'r--'); legend('Raw','Shifted'); legend boxoff;
-title('Input traces for dynamic time warping')
-xlabel('Time (s)'); ylabel('Amplitude (a.u.)');
-# plot warped trace to compare
-subplot(2,1,2);
-plot(tvec,u0,'b'); hold on;
-plot(tvec2,u1,'r--'); axis('tight');
-legend('Raw','Warped'); legend boxoff;
-title('Output traces for dynamic time warping')
-xlabel('Time (s)'); ylabel('Amplitude (a.u.)');
+p
+savefig(p, "./SINEdistance.png")
 
 ## An example of computing the residual misfit
 
 error = computeDTWerror( err, stbar, maxLag );
+
+
 
 ## Apply dynamic time warping in the backward direction
 
@@ -170,7 +150,6 @@ dist  = accumulateErrorFunction(direction, err, npts, maxLag, b ); # backward ac
 stbar = backtrackDistanceFunction( -1*direction, dist, err, -maxLag, b ); # find shifts
 
 ## plot the results
-
 stbarTime = stbar .* dt;      # convert from samples to time
 tvec2     = tvec + stbarTime; # make the warped time axis
 

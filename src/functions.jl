@@ -1,5 +1,5 @@
 module DTWDTfunctions
-export test, computeErrorFunction, accumulateErrorFunction
+export test, computeErrorFunction, accumulateErrorFunction, backtrackDistanceFunction
 using FFTW, LinearAlgebra, DSP
 
 function test()
@@ -119,7 +119,7 @@ function accumulateErrorFunction(dir::Int, err::Array{Float64,2}, nSample::Int, 
     nLag = (2 * lag ) + 1; # number of lags from [ -lag : +lag ]
 
     # allocate distance matrix
-    global d = zeros(Float64, nSample, nLag);
+    d = zeros(Float64, nSample, nLag);
 
     #--------------------------------------------------------------------------
     # Setup indices based on forward or backward accumulation direction
@@ -202,95 +202,171 @@ end
 
 """
 
-"""
 function backtrackDistanceFunction(dir::Int, d::Array{Float64,2}, err::Array{Float64,2}, lmin::Int, b::Int)
 
-nSample = size(d,1); # number of samples
-nLag    = size(d,2); # number of lags
-stbar   = zeros(Float64, nSample); # allocate
+    #d = dist
+    #dir = -1
+    #lmin = -maxLag
+    #b = 1
 
-#--------------------------------------------------------------------------
-# Setup indices based on forward or backward accumulation direction
-#--------------------------------------------------------------------------
-if dir > 0            # FORWARD
-    iBegin = 1;       # start index
-    iEnd   = nSample; # end index
-    iInc   = 1;       # increment
-else                  # BACKWARD
-    iBegin = nSample; # start index
-    iEnd   = 1;       # stop index
-    iInc   = -1;      # increment
-end
-#--------------------------------------------------------------------------
-# start from the end (front or back)
-ll = argmin(d[iBegin,:]); # find minimum accumulated distance at front or back depending on 'dir'
-stbar[iBegin] = ll + lmin - 1; # absolute value of integer shift
-#--------------------------------------------------------------------------
-# move through all time samples in forward or backward direction
-ii = iBegin;
+    nSample = size(d,1); # number of samples
+    nLag    = size(d,2); # number of lags
+    stbar   = zeros(Int64, nSample); # allocate
 
-while ii != iEnd
-
-    # min/max for edges/boundaries
-    ji = max( 1, min( [ nSample, ii + iInc ] ) );
-    jb = max( 1, min( [ nSample, ii + iInc * b ] ) );
-
-    # -----------------------------------------------------------------
-    # check limits on lag indices
-    lMinus1 = ll - 1; # lag at l-1
-
-    if lMinus1 < 1 # check lag index is greater than 1
-        lMinus1 = 1; # make lag = first lag
+    #--------------------------------------------------------------------------
+    # Setup indices based on forward or backward accumulation direction
+    #--------------------------------------------------------------------------
+    if dir > 0            # FORWARD
+        iBegin = 1;       # start index
+        iEnd   = nSample; # end index
+        iInc   = 1;       # increment
+    else                  # BACKWARD
+        iBegin = nSample; # start index
+        iEnd   = 1;       # stop index
+        iInc   = -1;      # increment
     end
+    #--------------------------------------------------------------------------
+    # start from the end (front or back)
+    ll0 = argmin(d[iBegin,:]); # find minimum accumulated distance at front or back depending on 'dir'
+    stbar[iBegin] = ll0 + lmin - 1; # absolute value of integer shift
+    #--------------------------------------------------------------------------
+    # move through all time samples in forward or backward direction
+    ii = iBegin;
 
-    lPlus1 = ll + 1; # lag at l+1
-
-    if lPlus1 > nLag # check lag index less than max lag
-        lPlus1 = nLag; # D.M. and D.Y. version
-    end
-    # -----------------------------------------------------------------
-
-    # get distance at lags (ll-1, ll, ll+1)
-    distLminus1 = d( jb, lMinus1 ); # minus:  d( i-b, j-1 )
-    distL       = d( ji, ll );      # actual: d( i-1, j   )
-    distLplus1  = d( jb, lPlus1 );  # plus:   d( i-b, j+1 )
-
-    if (ji != jb) # equation 10 in Hale (2013)
-        for kb = ji : iInc : jb - iInc # sum errors over i-1:i-b+1
-            distLminus1 = distLminus1 + err( kb, lMinus1 );
-            distLplus1  = distLplus1  + err( kb, lPlus1  );
+    while ii != iEnd
+        if ii == iBegin
+            ll = ll0;
+        else
+            ll = ll_next
         end
-    end
 
-    dl = min( [ distLminus1, distL, distLplus1 ] ); # update minimum distance to previous sample
+        # min/max for edges/boundaries
+        ji = max( 1, min(nSample, ii + iInc) );
+        jb = max( 1, min(nSample, ii + iInc * b) );
 
-    if ( dl ~= distL ) # then ll ~= ll and we check forward and backward
-        if ( dl == distLminus1 )
-            ll = lMinus1;
-        else # ( dl == lPlus1 )
-            ll = lPlus1;
+        # -----------------------------------------------------------------
+        # check limits on lag indices
+
+        lMinus1 = ll - 1; # lag at l-1
+
+        if lMinus1 < 1 # check lag index is greater than 1
+            lMinus1 = 1; # make lag = first lag
         end
-    end
 
-    # assume ii = ii - 1
-    global ii = ii + iInc; # previous time sample
+        lPlus1 = ll + 1; # lag at l+1
 
-    stbar(ii) = ll + lmin - 1; # absolute integer of lag
+        if lPlus1 > nLag # check lag index less than max lag
+            lPlus1 = nLag; # D.M. and D.Y. version
+        end
+        # -----------------------------------------------------------------
+        # get distance at lags (ll-1, ll, ll+1)
+        distLminus1 = d[jb, lMinus1]; # minus:  d( i-b, j-1 )
+        distL       = d[ji, ll];      # actual: d( i-1, j   )
+        distLplus1  = d[jb, lPlus1];  # plus:   d( i-b, j+1 )
 
-    # now move to correct time index, if smoothing difference over many
-    # time samples using 'b'
-    if ( ll == lMinus1 || ll == lPlus1 ) # check edges to see about b values
-        if ( ji ~= jb ) # if b>1 then need to move more steps
-            for kb = ji : iInc : jb - iInc
-                ii = ii + iInc; # move from i-1:i-b-1
-                stbar(ii) = ll + lmin - 1; # constant lag over that time
+        if ji != jb # equation 10 in Hale (2013)
+            for kb = ji:iInc:jb-iInc # sum errors over i-1:i-b+1
+                distLminus1 = distLminus1 + err[kb, lMinus1];
+                distLplus1  = distLplus1  + err[kb, lPlus1];
+            end
+        end
+
+        dl = min(distLminus1, distL, distLplus1); # update minimum distance to previous sample
+
+        if ( dl != distL ) # then ll != ll and we check forward and backward
+            if ( dl == distLminus1 )
+                global ll_next = lMinus1;
+            else # ( dl == lPlus1 )
+                global ll_next = lPlus1;
+            end
+        end
+
+        # assume ii = ii - 1
+        ii += iInc; # previous time sample
+
+        stbar[ii] = ll_next + lmin - 1; # absolute integer of lag
+        # now move to correct time index, if smoothing difference over many
+        # time samples using 'b'
+
+        if ( ll_next == lMinus1 || ll_next == lPlus1 ) # check edges to see about b values
+            if ( ji != jb ) # if b>1 then need to move more steps
+                for kb = ji:iInc:jb - iInc
+                    ii = ii + iInc; # move from i-1:i-b-1
+                    stbar[ii] = ll_next + lmin - 1; # constant lag over that time
+                end
             end
         end
     end
+
+    return stbar
+
+    #------------------------#
+    # while loop is tricky with Julia
+    # we modified ll to ll_next
+    # this is the original source from dylanmikesell
+    #------------------------#
+    # ii = iBegin;
+    # while (ii ~= iEnd)
+    #
+    #     % min/max for edges/boundaries
+    #     ji = max( 1, min( [ nSample, ii + iInc ] ) );
+    #     jb = max( 1, min( [ nSample, ii + iInc * b ] ) );
+    #
+    #     % -----------------------------------------------------------------
+    #     % check limits on lag indices
+    #     lMinus1 = ll - 1; % lag at l-1
+    #
+    #     if lMinus1 < 1 % check lag index is greater than 1
+    #         lMinus1 = 1; % make lag = first lag
+    #     end
+    #
+    #     lPlus1 = ll + 1; % lag at l+1
+    #
+    #     if lPlus1 > nLag % check lag index less than max lag
+    #         lPlus1 = nLag; % D.M. and D.Y. version
+    #     end
+    #     % -----------------------------------------------------------------
+    #
+    #     % get distance at lags (ll-1, ll, ll+1)
+    #     distLminus1 = d( jb, lMinus1 ); % minus:  d( i-b, j-1 )
+    #     distL       = d( ji, ll );      % actual: d( i-1, j   )
+    #     distLplus1  = d( jb, lPlus1 );  % plus:   d( i-b, j+1 )
+    #
+    #     if (ji ~= jb) % equation 10 in Hale (2013)
+    #         for kb = ji : iInc : jb - iInc % sum errors over i-1:i-b+1
+    #             distLminus1 = distLminus1 + err( kb, lMinus1 );
+    #             distLplus1  = distLplus1  + err( kb, lPlus1  );
+    #         end
+    #     end
+    #
+    #     dl = min( [ distLminus1, distL, distLplus1 ] ); % update minimum distance to previous sample
+    #
+    #     if ( dl ~= distL ) % then ll ~= ll and we check forward and backward
+    #         if ( dl == distLminus1 )
+    #             ll = lMinus1;
+    #         else % ( dl == lPlus1 )
+    #             ll = lPlus1;
+    #         end
+    #     end
+    #
+    #     % assume ii = ii - 1
+    #     ii = ii + iInc; % previous time sample
+    #
+    #     stbar(ii) = ll + lmin - 1; % absolute integer of lag
+    #
+    #     % now move to correct time index, if smoothing difference over many
+    #     % time samples using 'b'
+    #     if ( ll == lMinus1 || ll == lPlus1 ) % check edges to see about b values
+    #         if ( ji ~= jb ) % if b>1 then need to move more steps
+    #             for kb = ji : iInc : jb - iInc
+    #                 ii = ii + iInc; % move from i-1:i-b-1
+    #                 stbar(ii) = ll + lmin - 1; % constant lag over that time
+    #             end
+    #         end
+    #     end
+    # end
+
 end
 
-return stbar
-end
-"""
 
 end
