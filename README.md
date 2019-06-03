@@ -6,7 +6,7 @@
 [![Build Status](https://travis-ci.com/kura-okubo/DTWDT.jl.svg?branch=master)](https://travis-ci.com/kura-okubo/DTWDT.jl)
 [![Codecov](https://codecov.io/gh/kura-okubo/DTWDT.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/kura-okubo/DTWDT.jl)
 
-![](./docs/src/assets/logo.svg)
+<img src="./docs/src/assets/logo1.png" alt="logo" width="500"/>
 
 This package is developped  in reference to  [Dylan Mikesell's DynamicWarping repo](https://github.com/dylanmikesell/DynamicWarping) in MATLAB and [tclements/DynamicWarping-python](https://github.com/tclements/DynamicWarping-python).
 
