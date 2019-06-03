@@ -26,7 +26,7 @@ stTime = st;
 stbarTime, stbar, dist, dtwerror = dtwdt(u0, u1, dt,
                     dtwnorm="L2",
                     maxLag=80, #number of maxLag id to search the distance
-                    b=1, # b value to controll distance calculation algorithm
+                    b=10, # b value to controll distance calculation algorithm
                     direction=1, #direction to accumulate errors (1=forward, -1=backward, 0=double to smooth)
                     )
 

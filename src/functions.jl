@@ -291,6 +291,8 @@ function backtrackDistanceFunction(dir::Int, d::Array{Float64,2}, err::Array{Flo
             else # ( dl == lPlus1 )
                 global ll_next = lPlus1;
             end
+        else
+            ll_next = ll
         end
 
         # assume ii = ii - 1

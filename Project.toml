@@ -4,7 +4,10 @@ authors = ["kurama"]
 version = "0.1.0"
 
 [deps]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+GLM = "38e38edf-8417-5370-95a0-9cbb8c7f171a"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+ORCA = "47be7bcc-f1a6-5447-8b36-7eeeff7534fd"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [compat]
