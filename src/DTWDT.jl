@@ -7,37 +7,27 @@ using .DTWDTfunctions
 export dtwdt
 
 """
+    dtwdt(u0::Array{Float64,1}, u1::Array{Float64,1}, dt::Float64; dtwnorm::String="L2"
+        maxlag::Int64=80, b::Int64=1, direction::Int64=1)
 
-dtwdt(u0::Array{Float64,1}, u1::Array{Float64,1}, dt::Float;
+returns minimum distance time lag and index in dist array, and dtw error between traces.
 
-    dtwnorm::String="L2" #norm to calculate distance; effect on the unit of dtw error
+# Arguments
+- `u0, u1::Array{Float64,1}`: Time series.
+- `dt::Float64`: time step (dt of u0 and u1 should be same)
+- `dtwnorm::String`: norm to calculate distance; effect on the unit of dtw error. (L2 or L1)
+-  Note: L2 is not squard, thus distance is calculated as (u1[i]-u0[j])^2
+- `maxlag::Int64`: number of maxLag id to search the distance.
+- `b::Int64t`: b value to controll in distance calculation algorithm (see Mikesell et al. 2015).
+- `direction::Int64`: length of noise data window, in seconds, to cross-correlate.
 
-    !Note: L2 is not squard, thus distance is calculated as (u1[i]-u0[j])^2!
-
-    maxlag::Int=80, #number of maxLag id to search the distance
-
-    b::Int=1, # b value to controll distance calculation algorithm
-
-    direction::Int=1, #direction to accumulate errors (1=forward, -1=backward, 0=double to smooth)
-
-    savefig::Tuple{Bool,String}=(true, "png") #save figures of distance array and traces
-
-    )
-
-return minimum distance time lag and index in dist array, and dtw error between traces.
-
-OUTPUT:
-
-    stbarTime = series of time shift at t
-
-    stbar = series of minimum distance index in distance array
-
-    dist  = distance array
-
-    dtwerror = dtw error (distance) between two time series
+# Outputs
+- `stbarTime::Array{Float64,1}`: series of time shift at t.
+- `stbar::Array{Int64,1}`: series of minimum distance index in distance array.
+- `dist::Array{Int64,2}`: distance array.
+- `dtwerror::Float64`: dtw error (distance) between two time series.
 
 """
-
 function dtwdt(u0::Array{Float64,1}, u1::Array{Float64,1}, dt::Float64;
     dtwnorm::String="L2",    #norm to calculate distance; effect on the unit of dtw error
     maxLag::Int64=80,         #number of maxLag id to search the distance
