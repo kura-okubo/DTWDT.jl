@@ -7,13 +7,13 @@ using .DTWDTfunctions
 export dtwdt
 
 """
-    dtwdt(u0::Array{Float64,1}, u1::Array{Float64,1}, dt::Float64; dtwnorm::String="L2"
+    dtwdt(u0::Union{Array{Float32,1},Array{Float64,1}}, u1::Union{Array{Float32,1},Array{Float64,1}}, dt::Float64; dtwnorm::String="L2"
         maxlag::Int64=80, b::Int64=1, direction::Int64=1)
 
 returns minimum distance time lag and index in dist array, and dtw error between traces.
 
 # Arguments
-- `u0, u1::Array{Float64,1}`: Time series.
+- `u0, u1::Union{Array{Float32,1},Array{Float64,1}}`: Time series.
 - `dt::Float64`: time step (dt of u0 and u1 should be same)
 - `dtwnorm::String`: norm to calculate distance; effect on the unit of dtw error. (L2 or L1)
 -  Note: L2 is not squard, thus distance is calculated as (u1[i]-u0[j])^2
@@ -28,7 +28,7 @@ returns minimum distance time lag and index in dist array, and dtw error between
 - `dtwerror::Float64`: dtw error (distance) between two time series.
 
 """
-function dtwdt(u0::Array{Float64,1}, u1::Array{Float64,1}, dt::Float64;
+function dtwdt(u0::Union{Array{Float32,1},Array{Float64,1}}, u1::Union{Array{Float32,1},Array{Float64,1}}, dt::Float64;
     dtwnorm::String="L2",    #norm to calculate distance; effect on the unit of dtw error
     maxLag::Int64=80,         #number of maxLag id to search the distance
     b::Int64=1,               #b value to controll in distance calculation algorithm (see Mikesell et al. 2015)

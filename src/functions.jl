@@ -27,7 +27,7 @@ export test, computeErrorFunction, accumulateErrorFunction, backtrackDistanceFun
  Original by Di Yang
  Last modified by Dylan Mikesell (25 Feb. 2015)
 """
-function computeErrorFunction(u1::Array{Float64, 1}, u0::Array{Float64, 1}, nSample::Int, lag::Int; norm::String="L2")
+function computeErrorFunction(u1::Union{Array{Float32,1},Array{Float64,1}}, u0::Union{Array{Float32,1},Array{Float64,1}}, nSample::Int, lag::Int; norm::String="L2")
 
     if lag >= nSample
         error("computeErrorFunction:lagProblem ","lag must be smaller than nSample");
